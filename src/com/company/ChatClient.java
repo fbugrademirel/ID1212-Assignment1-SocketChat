@@ -6,10 +6,13 @@ import java.util.concurrent.*;
 
 public class ChatClient {
 
+    private static final String awsServer = "13.53.139.159";
+    private static final String localhost = "localhost";
+
     public static void main(String[] args) {
 
         try {
-            Socket clientSocket = new Socket("localhost", 6666);
+            Socket clientSocket = new Socket(localhost, 6666);
 
             ExecutorService service = Executors.newFixedThreadPool(2);
             service.submit(new ChatReceiver(clientSocket));

@@ -1,10 +1,9 @@
 package com.company;
+
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class MainChatServer {
 
@@ -17,9 +16,11 @@ public class MainChatServer {
             executorService = Executors.newCachedThreadPool();
             ServerSocket ss = new ServerSocket(port);
             while(true) {
+                System.out.println("Server running...");
                 Socket s = ss.accept();
                 executorService.submit(new ChatServer(s, clientList));
                 clientList.add(s);
+                System.out.println("Current clients:\n" + clientList.toString());
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -48,8 +49,11 @@ class ChatServer implements Runnable {
         try {
             BufferedReader inData = new BufferedReader(new InputStreamReader(s.getInputStream()));
             String text;
+            /**
+             * When you read from BufferedReader, a remotely closed socket will return null.
+             */
             while((text = inData.readLine()) != null) {
-                System.out.println("Received: " + text);
+                System.out.println("Forwarded to all clients: " + text);
                 for (Socket s : clientList) {
                     if(s != this.s) {
                         PrintStream out = new PrintStream(s.getOutputStream());
@@ -57,6 +61,8 @@ class ChatServer implements Runnable {
                     }
                 }
             }
+            clientList.remove(s);
+            s.close();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
